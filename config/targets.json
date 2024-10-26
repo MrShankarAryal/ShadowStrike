@@ -1,0 +1,15 @@
+{
+    "targets": [
+        {
+            "name": "Default Target 1",
+            "ip": "192.168.1.100",
+            "port": 80,
+            "attack_mode": "SYN Flood"
+        },
+        {
+            "name": "Default Target 2",
+            "url": "http://example.com",
+            "attack_mode": "HTTP DDoS"
+        }
+    ]
+}

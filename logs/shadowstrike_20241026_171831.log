@@ -1,0 +1,8 @@
+2024-10-26 17:19:59,046 - ShadowStrike - INFO - Reconnaissance data gathered:
+Reconnaissance completed for 185.199.109.153
+Open ports: [22, 80, 443]
+OS: Linux
+Services: SSH, HTTP, HTTPS
+2024-10-26 17:22:54,956 - ShadowStrike - INFO - Attack started successfully
+2024-10-26 17:23:58,145 - ShadowStrike - INFO - Attack stopped successfully
+2024-10-26 17:24:54,216 - ShadowStrike - INFO - Attack started successfully

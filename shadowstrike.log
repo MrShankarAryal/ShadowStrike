@@ -1,0 +1,13 @@
+2024-08-18 20:02:05,074 - ShadowStrike - INFO - Reconnaissance completed: 2024-08-18 20:02:05.074056 - IP: 185.199.108.153
+2024-08-18 20:02:21,265 - ShadowStrike - INFO - Attack started: 2024-08-18 20:02:21.265346 - IP: 185.199.108.153, URL: mrshankararyal.github.io, Mode: SYN Flood
+2024-08-18 20:02:35,287 - ShadowStrike - INFO - Attack stopped: 2024-08-18 20:02:35.287830 - 
+2024-08-18 21:32:19,743 - ShadowStrike - INFO - Reconnaissance completed: 2024-08-18 21:32:19 - IP: mrshankararyal.github.io
+2024-08-18 21:32:29,941 - ShadowStrike - INFO - Reconnaissance completed: 2024-08-18 21:32:29 - IP: mrshankararyal.github.io
+2024-08-18 21:35:12,732 - ShadowStrike - INFO - Reconnaissance completed: 2024-08-18 21:35:12 - IP: mrshankararyal.github.io
+2024-08-18 21:36:12,392 - ShadowStrike - INFO - Reconnaissance completed: 2024-08-18 21:36:12 - IP: 185.199.108.153
+2024-08-18 21:36:12,392 - ShadowStrike - INFO - Initiating attack on port 80 of IP 185.199.108.153 using mode SYN Flood
+2024-08-18 21:36:12,400 - ShadowStrike - ERROR - Error during auto-attack: start_attack() missing 1 required positional argument: 'target_url'
+2024-08-18 22:17:12,244 - ShadowStrike - ERROR - Invalid IP address for SYN Flood.
+2024-08-18 22:51:04,976 - ShadowStrike - INFO - Reconnaissance completed: 2024-08-18 22:51:04 - IP: 185.199.108.153
+2024-10-26 16:56:19,595 - ShadowStrike - INFO - Attack started: 2024-10-26 16:56:19.595773 - IP: 185.199.109.153, URL: https://mrshankararyal.github.io/, Mode: HTTP DDoS
+2024-10-26 16:56:45,612 - ShadowStrike - INFO - Attack stopped: 2024-10-26 16:56:45.612754 - 
