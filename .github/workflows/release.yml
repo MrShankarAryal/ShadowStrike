@@ -9,6 +9,10 @@ on:
 jobs:
   build-and-release:
     runs-on: windows-latest
+
+    # ADD THIS PERMISSIONS BLOCK
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
@@ -78,7 +82,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          installer/ShadowStrike-Setup-v2.0.exe
+          installer/ShadowStrike-Setup-${{ github.ref_name }}.exe
           installer/ShadowStrike-v${{ github.ref_name }}-Portable.zip
         body: |
           ## ShadowStrike ${{ github.ref_name }}
