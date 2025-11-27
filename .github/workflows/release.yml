@@ -36,16 +36,17 @@ jobs:
     - name: Install Inno Setup
       shell: powershell
       run: |
-        # Use a stable, direct download link for the latest Inno Setup executable
-        # This bypasses the potentially slow PHP redirect.
-        $InnoUrl = "https://files.jrsoftware.org/is/6.6/innosetup-6.6.1.exe" 
+        # Revert to the stable, version-agnostic redirect URL
+        $InnoUrl = "https://jrsoftware.org/download.php/is.exe" 
         $InstallerFile = "innosetup-installer.exe"
+        
+        # CRITICAL: This prevents Invoke-WebRequest from hanging or stalling on the download
+        $ProgressPreference = 'SilentlyContinue'
         
         Write-Host "Downloading Inno Setup from: $InnoUrl"
         Invoke-WebRequest -Uri $InnoUrl -OutFile $InstallerFile
         
-        # Run the silent installation with standard, non-interactive flags.
-        # -Wait is critical to ensure the next step (Build Installer) doesn't start too early.
+        # Run the silent installation with robust flags (this part is already correct)
         Write-Host "Starting silent installation..."
         Start-Process -FilePath $InstallerFile -ArgumentList "/VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART" -Wait
         Write-Host "Installation complete."
