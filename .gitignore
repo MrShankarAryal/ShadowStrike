@@ -79,3 +79,7 @@ publish/
 
 #Zip
 *.zip
+
+PUSH_TO_GITHUB.md
+PUSH_v2.1.0_GUIDE.md
+my_build_output.txt
