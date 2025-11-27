@@ -38,7 +38,7 @@ jobs:
       run: |
         # Use a stable, direct download link for the latest Inno Setup executable
         # This bypasses the potentially slow PHP redirect.
-        $InnoUrl = "https://files.jrsoftware.org/is/6.6/innosetup-6.6.2.exe" 
+        $InnoUrl = "https://files.jrsoftware.org/is/6.6/innosetup-6.6.1.exe" 
         $InstallerFile = "innosetup-installer.exe"
         
         Write-Host "Downloading Inno Setup from: $InnoUrl"
