@@ -1,0 +1,118 @@
+<UserControl x:Class="ShadowStrike.UI.Views.InjectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#0D1117">
+        <StackPanel Margin="40">
+            <TextBlock Text="🛡️ SQL Injection &amp; File Upload Testing" FontSize="28" FontWeight="Light" Margin="0,0,0,30" Foreground="White"/>
+
+            <!-- Target Configuration -->
+            <Border Background="#0D1117" CornerRadius="8" Padding="30" Margin="0,0,0,30" BorderBrush="#00AAFF" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="TARGET CONFIGURATION" FontWeight="Bold" Foreground="#00AAFF" Margin="0,0,0,20"/>
+                    
+                    <TextBlock Text="Target URL" Foreground="#AABBCC" Margin="0,0,0,5"/>
+                    <TextBox x:Name="TargetUrlInput" 
+                             FontSize="16" 
+                             Margin="0,0,0,15"
+                             Text="https://example.com"
+                             Foreground="White"
+                             CaretBrush="White"
+                             Background="#151921"/>
+
+                    <TextBlock Text="Parameter to Test (for SQLi)" Foreground="#AABBCC" Margin="0,0,0,5"/>
+                    <TextBox x:Name="ParameterInput" 
+                             FontSize="16" 
+                             Margin="0,0,0,15"
+                             Text="id"
+                             Foreground="White"
+                             CaretBrush="White"
+                             Background="#151921"/>
+
+                    <TextBlock Text="File to Upload (for File Upload Test)" Foreground="#AABBCC" Margin="0,0,0,5"/>
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="100"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0"
+                                 x:Name="FilePathInput" 
+                                 FontSize="16" 
+                                 IsReadOnly="True"
+                                 Text="Select a file..."
+                                 Foreground="White"
+                                 CaretBrush="White"
+                                 Background="#151921"/>
+                        <Button Grid.Column="2"
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        x:Name="TestSqlInjectionBtn"
+                        Content="TEST SQL INJECTION"
+                        Height="50"
+                        Click="TestSqlInjection_Click"
+                        Background="#00AAFF"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Style="{StaticResource MaterialDesignRaisedButton}"/>
+
+                <Button Grid.Column="2"
+                        x:Name="TestFileUploadBtn"
+                        Content="TEST FILE UPLOAD"
+                        Height="50"
+                        Click="TestFileUpload_Click"
+                        Background="#00AAFF"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Style="{StaticResource MaterialDesignRaisedButton}"/>
+            </Grid>
+
+            <!-- Results Display -->
+            <Border Background="#0D1117" CornerRadius="8" Padding="30" BorderBrush="#00AAFF" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="TEST RESULTS" FontWeight="Bold" Foreground="#00AAFF" Margin="0,0,0,20"/>
+                    
+                    <ScrollViewer Height="400" VerticalScrollBarVisibility="Auto">
+                        <TextBox x:Name="ResultsOutput"
+                                 Background="Transparent"
+                                 Foreground="#00FF88"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas"
+                                 BorderThickness="0"
+                                 Text="Ready to test. Click a button above to begin."/>
+                    </ScrollViewer>
+
+                    <!-- Mitigation Guidance -->
+                    <Border Background="#151921" CornerRadius="4" Padding="15" Margin="0,20,0,0" BorderBrush="#FF8800" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="💡 MITIGATION GUIDANCE" FontWeight="Bold" Foreground="#FF8800" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="MitigationText"
+                                       Text="• SQLi: Use parameterized queries/prepared statements&#x0a;• File Upload: Validate server-side, whitelist extensions, store outside web root&#x0a;• Always sanitize and encode user input"
+                                       Foreground="#AABBCC"
+                                       TextWrapping="Wrap"
+                                       FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Stats Grid -->
+            <Grid Margin="0,30,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="STATUS" Foreground="#00FF88" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="StatusText" Text="READY" FontSize="20" Foreground="#00FF88" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

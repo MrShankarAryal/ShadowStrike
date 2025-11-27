@@ -1,0 +1,147 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Linq;
+
+namespace ShadowStrike.Core
+{
+    public class InjectionTester
+    {
+        private HttpClient _client;
+        
+        public InjectionTester()
+        {
+            _client = new HttpClient();
+            _client.Timeout = TimeSpan.FromSeconds(30);
+        }
+
+        // File upload vulnerability testing
+        public class FileUploadTest
+        {
+            public string TestName { get; set; }
+            public string Description { get; set; }
+            public bool Vulnerable { get; set; }
+            public string Details { get; set; }
+        }
+
+        public async Task<List<FileUploadTest>> TestFileUploadAsync(string url, string filePath)
+        {
+            var results = new List<FileUploadTest>();
+            public string Response { get; set; }
+            public string Severity { get; set; }
+        }
+
+        public async Task<List<SqlInjectionTest>> TestSqlInjectionAsync(string url, string parameter)
+        {
+            var results = new List<SqlInjectionTest>();
+            var payloads = GetSqlInjectionPayloads();
+            var timeBasedTestName = "Time-Based Blind (5 sec delay)";
+
+            foreach (var payload in payloads)
+            {
+                try
+                {
+                    bool isTimeBasedTest = payload.Key == timeBasedTestName;
+                    
+                    var testUrl = $"{url}?{parameter}={Uri.EscapeDataString(payload.Value)}";
+                    
+                    // Start timer immediately before the request
+                    var startTime = DateTime.Now; 
+                    
+                    var response = await _client.GetAsync(testUrl);
+                    
+                    // Stop timer immediately after the response
+                    var totalTime = DateTime.Now - startTime; 
+                    
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    bool isVulnerable = false;
+                    string severity = "NONE";
+
+                    if (isTimeBasedTest)
+                    {
+                        // Check if the response time significantly exceeds the SLEEP duration (5 seconds)
+                        if (totalTime.TotalSeconds >= 5) 
+                        {
+                            isVulnerable = true;
+                            severity = "CRITICAL (Time-Based)";
+                        }
+                    }
+                    else
+                    {
+                        // Use original error-based detection
+                        isVulnerable = DetectSqlInjectionVulnerability(content, payload.Key);
+                        severity = isVulnerable ? "HIGH (Error-Based)" : "NONE";
+                    }
+
+                    results.Add(new SqlInjectionTest
+                    {
+                        TestName = payload.Key + (isTimeBasedTest ? $" (Took {totalTime.TotalSeconds:F2}s)" : ""),
+                        Payload = payload.Value,
+                        Vulnerable = isVulnerable,
+                        Response = content.Length > 200 ? content.Substring(0, 200) + "..." : content,
+                        Severity = severity
+                    });
+                }
+                catch (Exception ex)
+                {
+                    results.Add(new SqlInjectionTest
+                    {
+                        TestName = payload.Key,
+                        Payload = payload.Value,
+                        Vulnerable = false,
+                        Response = $"Error: {ex.Message}. Make sure URL includes the endpoint (e.g., /api/search)",
+                        Severity = "ERROR"
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        private Dictionary<string, string> GetSqlInjectionPayloads()
+        {
+            return new Dictionary<string, string>
+            {
+                { "Single Quote Test", "'" },
+                { "Double Quote Test", "\"" },
+                { "SQL Comment", "' --" },
+                { "OR 1=1", "' OR '1'='1" },
+                { "UNION SELECT", "' UNION SELECT NULL--" },
+                { "Time-Based Blind (5 sec delay)", "' AND (SELECT 5 * FROM (SELECT(SLEEP(5)))a)--" }, // Using MySQL format
+                { "Boolean Blind", "' AND 1=1--" },
+                { "Stacked Queries", "'; DROP TABLE users--" }
+            };
+        }
+
+        private bool DetectSqlInjectionVulnerability(string response, string testType)
+        {
+            // Simple detection based on error messages
+            var errorSignatures = new[]
+            {
+                "sql syntax",
+                "mysql_fetch",
+                "syntax error",
+                "postgresql error",
+                "ora-",
+                "microsoft sql server",
+                "unclosed quotation mark"
+            };
+
+            var lowerResponse = response.ToLower();
+            return errorSignatures.Any(sig => lowerResponse.Contains(sig));
+        }
+
+        public string GetMitigationGuidance(string vulnerabilityType)
+        {
+            return vulnerabilityType switch
+            {
+                "SQLi" => "Use parameterized queries/prepared statements. Never concatenate user input into SQL queries.",
+                "File Upload" => "Validate file types server-side using magic bytes. Store uploads outside web root. Use whitelist for extensions.",
+                _ => "Follow OWASP security guidelines for web application security."
+            };
+        }
+    }
+}

@@ -1,0 +1,178 @@
+<UserControl x:Class="ShadowStrike.UI.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#0D1117">
+        <StackPanel Margin="40">
+            <TextBlock Text="Target Analysis Dashboard" FontSize="28" FontWeight="Light" Margin="0,0,0,30" Foreground="White"/>
+            <Border Background="#0D1117" CornerRadius="8" Padding="30" Margin="0,0,0,20" BorderBrush="#00AAFF" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="TARGET CONFIGURATION" FontWeight="Bold" Foreground="#00AAFF" Margin="0,0,0,20"/>
+                    <TextBlock Text="Target URL or IP" Foreground="#AABBCC" Margin="0,0,0,5"/>
+                    <TextBox x:Name="TargetInput" FontSize="16" Margin="0,0,0,15" materialDesign:HintAssist.Hint="Enter Target URL or IP (e.g. example.com)" Foreground="White" CaretBrush="White" Background="#151921"/>
+                    <Button x:Name="AnalyzeBtn" Content="ANALYZE TARGET" Height="50" Click="AnalyzeBtn_Click" Background="#00AAFF" Foreground="White" BorderThickness="0" Style="{StaticResource MaterialDesignRaisedButton}"/>
+                    <ProgressBar x:Name="ProgressBar" Height="4" Margin="0,20,0,0" IsIndeterminate="False" Visibility="Collapsed" Foreground="#00AAFF"/>
+                    <TextBlock x:Name="StatusText" Text="" Foreground="#AABBCC" Margin="0,10,0,0" TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            <!-- Results Making -->
+            <StackPanel x:Name="ResultsPanel" Visibility="Collapsed">
+                <!-- Quick Overview -->
+                <Border Background="#0D1117" CornerRadius="8" Padding="20" Margin="0,0,0,15" BorderBrush="#00AAFF" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="STATUS" Foreground="#AABBCC" FontSize="10"/>
+                            <TextBlock x:Name="StatusQuick" Text="ONLINE" Foreground="#00FF88" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="LATENCY" Foreground="#AABBCC" FontSize="10"/>
+                            <TextBlock x:Name="LatencyQuick" Text="45ms" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="OPEN PORTS" Foreground="#AABBCC" FontSize="10"/>
+                            <TextBlock x:Name="PortsQuick" Text="3" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Text="WAF" Foreground="#AABBCC" FontSize="10"/>
+                            <TextBlock x:Name="WafQuick" Text="None" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Domain Intelligence -->
+                <Expander Header="Domain Intelligence" Foreground="#00AAFF" FontWeight="Bold" Margin="0,0,0,10">
+                    <Border Background="#151921" Padding="15" CornerRadius="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Domain:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="DomainText" Text="-" Foreground="White" Margin="0,5"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="IP Addresses:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="IpListText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,5"/>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Hosting:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="HostingText" Text="-" Foreground="White" Margin="0,5"/>
+                            
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="CDN:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="CdnText" Text="-" Foreground="White" Margin="0,5"/>
+                        </Grid>
+                    </Border>
+                </Expander>
+
+                <!-- Infrastructure -->
+                <Expander Header="Infrastructure" Foreground="#00AAFF" FontWeight="Bold" Margin="0,0,0,10">
+                    <Border Background="#151921" Padding="15" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="Subdomains:" Foreground="#AABBCC" Margin="0,0,0,5"/>
+                            <TextBlock x:Name="SubdomainsText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock Text="Open Ports &amp; Services:" Foreground="#AABBCC" Margin="0,10,0,5"/>
+                            <TextBlock x:Name="PortsText" Text="-" Foreground="White" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Expander>
+
+                <Expander Header="Technology Stack" Foreground="#00AAFF" FontWeight="Bold" Margin="0,0,0,10">
+                    <Border Background="#151921" Padding="15" CornerRadius="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Web Server:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ServerText" Text="-" Foreground="White" Margin="0,5"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="CMS:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="CmsText" Text="-" Foreground="White" Margin="0,5"/>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Technologies:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TechText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,5"/>
+                        </Grid>
+                    </Border>
+                </Expander>
+
+                <!-- Security Posture -->
+                <Expander Header="Security Posture" Foreground="#00AAFF" FontWeight="Bold" Margin="0,0,0,10">
+                    <Border Background="#151921" Padding="15" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="Security Headers:" Foreground="#AABBCC" Margin="0,0,0,5"/>
+                            <TextBlock x:Name="SecurityHeadersText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock Text="WAF Detection:" Foreground="#AABBCC" Margin="0,10,0,5"/>
+                            <TextBlock x:Name="WafText" Text="-" Foreground="White" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Expander>
+
+                <!-- Application Mapping -->
+                <Expander Header="Application Mapping" Foreground="#00AAFF" FontWeight="Bold" Margin="0,0,0,10">
+                    <Border Background="#151921" Padding="15" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="Entry Points (Crawled):" Foreground="#AABBCC" Margin="0,0,0,5"/>
+                            <TextBlock x:Name="EntryPointsText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock Text="Parameters Identified:" Foreground="#AABBCC" Margin="0,10,0,5"/>
+                            <TextBlock x:Name="ParametersText" Text="-" Foreground="White" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Expander>
+
+                <!-- OSINT & Reconnaissance -->
+                <Expander Header="OSINT &amp; Reconnaissance" Foreground="#00AAFF" FontWeight="Bold" Margin="0,0,0,10">
+                    <Border Background="#151921" Padding="15" CornerRadius="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Registrant:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="RegistrantText" Text="-" Foreground="White" Margin="0,5"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Organization:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="OrgText" Text="-" Foreground="White" Margin="0,5"/>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Associated Domains:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="AssociatedDomainsText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,5"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Nameservers:" Foreground="#AABBCC" Margin="0,5"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="NameserversText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,5"/>
+                        </Grid>
+                    </Border>
+                </Expander>
+                <!--  Auto Recommendations -->
+                <Expander Header="Attack Surface &amp; Recommendations" Foreground="#FF8800" FontWeight="Bold" Margin="0,0,0,10" IsExpanded="True">
+                    <Border Background="#151921" Padding="15" CornerRadius="4" BorderBrush="#FF8800" BorderThickness="1">
+                        <TextBlock x:Name="SuggestionsText" Text="-" Foreground="White" TextWrapping="Wrap" FontSize="13"/>
+                    </Border>
+                </Expander>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
