@@ -76,3 +76,6 @@ Thumbs.db
 
 # Publish directory
 publish/
+
+#Zip
+*.zip
