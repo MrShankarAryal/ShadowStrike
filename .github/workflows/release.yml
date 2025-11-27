@@ -51,8 +51,17 @@ jobs:
         Write-Host "Installation complete."
         
     - name: Build Installer
+      shell: powershell
       run: |
-        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+        # Set the path to the Inno Setup compiler
+        $InnoPath = "C:\Program Files (x86)\Inno Setup 6"
+        
+        # Add the directory to the current shell's PATH
+        $env:Path += ";$InnoPath"
+        
+        # Now run the compiler using the command name, as it's now in the PATH
+        Write-Host "Starting Inno Setup Compiler..."
+        iscc setup.iss
         
     - name: Create Portable ZIP
       run: |
