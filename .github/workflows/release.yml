@@ -1,0 +1,95 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v2.0.0, v2.1.0, etc.
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build and Publish
+      run: |
+        dotnet publish ShadowStrike.UI/ShadowStrike.UI.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:PublishReadyToRun=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -o publish
+          
+    - name: Download Inno Setup
+      run: |
+        Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile "innosetup.exe"
+        Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
+        
+    - name: Build Installer
+      run: |
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+        
+    - name: Create Portable ZIP
+      run: |
+        Compress-Archive -Path publish\* -DestinationPath installer\ShadowStrike-v${{ github.ref_name }}-Portable.zip
+        
+    - name: Get version from tag
+      id: get_version
+      run: |
+        $version = "${{ github.ref_name }}" -replace '^v', ''
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          installer/ShadowStrike-Setup-v2.0.exe
+          installer/ShadowStrike-v${{ github.ref_name }}-Portable.zip
+        body: |
+          ## ShadowStrike ${{ github.ref_name }}
+          
+          ### 🚀 Installation Options
+          
+          **Option 1: Installer (Recommended)**
+          - Download `ShadowStrike-Setup-v2.0.exe`
+          - Run the installer
+          - Creates Start Menu and Desktop shortcuts
+          
+          **Option 2: Portable**
+          - Download `ShadowStrike-v${{ github.ref_name }}-Portable.zip`
+          - Extract and run `ShadowStrike.UI.exe`
+          - No installation required
+          
+          ### ✨ Features
+          - OSINT Engine - Comprehensive target analysis
+          - DDoS Modules - HTTP/SYN/UDP Flood attacks
+          - Injection Testing - SQL injection and file upload testing
+          - Ransomware Analysis - Security testing capabilities
+          - Terminal Interface - Integrated command-line
+          - Logs & History - Automatic JSON logging
+          
+          ### ⚠️ Legal Notice
+          This tool is for **authorized security testing only**. Unauthorized use is illegal.
+          
+          ### 📋 Requirements
+          - Windows 10/11 (64-bit)
+          - Administrator privileges (for raw socket operations)
+          
+          See [CHANGELOG.md](https://github.com/MrShankarAryal/ShadowStrike/blob/main/CHANGELOG.md) for detailed changes.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

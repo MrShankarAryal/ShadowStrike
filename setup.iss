@@ -4,7 +4,7 @@
 [Setup]
 ; Basic Information
 AppName=ShadowStrike
-AppVersion=2.0
+AppVersion=2.1.0
 AppPublisher=Shankar Aryal
 AppPublisherURL=https://github.com/MrShankarAryal/ShadowStrike
 AppSupportURL=https://github.com/MrShankarAryal/ShadowStrike/issues
@@ -14,7 +14,7 @@ DefaultGroupName=ShadowStrike
 AllowNoIcons=yes
 LicenseFile=LICENSE
 OutputDir=installer
-OutputBaseFilename=ShadowStrike-Setup-v2.0
+OutputBaseFilename=ShadowStrike-Setup-v2.1.0
 SetupIconFile=ShadowStrike.UI\img\eagle.ico
 Compression=lzma2/ultra64
 SolidCompression=yes

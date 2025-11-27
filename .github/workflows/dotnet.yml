@@ -1,0 +1,44 @@
+# This workflow builds and validates the ShadowStrike .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET Build & Validation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore ShadowStrike.sln
+      
+    - name: Build solution
+      run: dotnet build ShadowStrike.sln --configuration Release --no-restore
+      
+    - name: Run tests (if available)
+      run: dotnet test ShadowStrike.sln --configuration Release --no-build --verbosity normal
+      continue-on-error: true
+      
+    - name: Publish build artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ShadowStrike-Build-${{ github.sha }}
+        path: |
+          **/bin/Release/**
+          !**/bin/Release/**/ref/**
+          !**/bin/Release/**/*.pdb
+        retention-days: 7

@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-blue.svg)](https://www.microsoft.com/windows)
 [![Material Design](https://img.shields.io/badge/UI-Material_Design-E91E63)](https://materialdesigninxaml.net/)
-[![Version](https://img.shields.io/badge/Version-2.0-brightgreen.svg)](https://github.com/MrShankarAryal/ShadowStrike/releases)
+[![Version](https://img.shields.io/badge/Version-2.1.0-brightgreen.svg)](https://github.com/MrShankarAryal/ShadowStrike/releases)
 
 *High-performance network security assessment tool built with .NET 8 & WPF*
 
@@ -120,12 +120,37 @@
 - **Windows 10/11 (64-bit & 32-bit)**
 - *Note: Linux and macOS are currently NOT supported due to Windows-specific dependencies.*
 
-### Prerequisites
+### Option 1: Installer (Recommended)
 
-- **Administrator Privileges**: Required for raw socket operations (SYN/UDP floods)
-- *Note: .NET 8 Runtime is bundled with the application, so no separate installation is required.*
+Download the latest installer from the [Releases](https://github.com/MrShankarAryal/ShadowStrike/releases) page.
 
-### Build from Source
+1. Download `ShadowStrike-Setup-v2.1.0.exe`
+2. Run the installer
+3. Follow the installation wizard
+4. Launch from Start Menu or Desktop shortcut
+
+**Features:**
+- ✅ Automatic installation to Program Files
+- ✅ Start Menu and Desktop shortcuts with icon
+- ✅ Clean uninstall support
+- ✅ No .NET installation required (bundled)
+
+### Option 2: Portable Version
+
+Download the portable version from the [Releases](https://github.com/MrShankarAryal/ShadowStrike/releases) page.
+
+1. Download `ShadowStrike-v2.1.0-Portable.zip`
+2. Extract to any folder
+3. Run `ShadowStrike.UI.exe`
+
+**Features:**
+- ✅ No installation required
+- ✅ Run from USB drive or any location
+- ✅ Perfect for portable use
+
+### Option 3: Build from Source
+
+For developers who want to build from source:
 
 ```bash
 # Clone the repository
@@ -142,14 +167,10 @@ dotnet build --configuration Release
 dotnet run --project ShadowStrike.UI/ShadowStrike.UI.csproj
 ```
 
-### Binary Release
-
-Download the latest release from the [Releases](https://github.com/MrShankarAryal/ShadowStrike/releases) page.
-
-```bash
-# Extract and run
-ShadowStrike.exe
-```
+**Prerequisites:**
+- .NET 8 SDK
+- Windows 10/11
+- Administrator privileges (for raw socket operations)
 
 ---
 
