@@ -83,17 +83,18 @@ namespace ShadowStrike.UI.Views
 
                 if (!System.Net.IPAddress.TryParse(IpInput.Text, out var ip))
                 {
-                    MessageBox.Show("Invalid IP Address.");
+                    CustomMessageBox.Show("Invalid IP Address.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 if (!int.TryParse(PortInput.Text, out int port))
                 {
-                    MessageBox.Show("Invalid Port.");
+                    CustomMessageBox.Show("Invalid Port.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 int threads = (int)ThreadSlider.Value;
+                int duration = (int)DurationSlider.Value;
                 
                 _isAttacking = true;
                 AttackBtn.Content = "STOP ATTACK";
@@ -102,6 +103,12 @@ namespace ShadowStrike.UI.Views
                 StatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 50, 50));
                 
                 _cts = new CancellationTokenSource();
+
+                if (duration > 0)
+                {
+                    _cts.CancelAfter(TimeSpan.FromSeconds(duration));
+                }
+
                 _timer.Start();
 
                 try 
@@ -111,7 +118,7 @@ namespace ShadowStrike.UI.Views
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Attack Error: {ex.Message}");
+                    CustomMessageBox.Show($"Attack Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     StopAttack();
                 }
             }

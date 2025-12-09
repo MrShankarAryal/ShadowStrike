@@ -39,6 +39,10 @@ namespace ShadowStrike.Core
                             {
                                 await client.SendAsync(payload, payload.Length);
                                 Interlocked.Increment(ref _packetsSent);
+                                
+                                // Prevent complete saturation of local uplink
+                                // A tiny delay allows other traffic (like OS keepalives) to pass
+                                await Task.Delay(1);
                             }
                             catch { }
                         }

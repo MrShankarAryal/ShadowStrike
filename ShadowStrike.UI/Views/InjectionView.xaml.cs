@@ -26,19 +26,11 @@ namespace ShadowStrike.UI.Views
             var appState = AppState.Load();
             if (!string.IsNullOrEmpty(appState.TargetUrl))
             {
-                TargetUrlInput.Text = appState.TargetUrl;
+                // Try to fill all target inputs
+                SqliTargetUrlInput.Text = appState.TargetUrl;
+                XssTargetUrlInput.Text = appState.TargetUrl;
+                UploadTargetUrlInput.Text = appState.TargetUrl;
             }
-
-            // Check if scan is required
-            // Check if scan is required
-            this.Loaded += (s, e) =>
-            {
-                var state = AppState.Load();
-                if (!string.IsNullOrEmpty(state.TargetUrl))
-                {
-                    TargetUrlInput.Text = state.TargetUrl;
-                }
-            };
         }
 
         private void BrowseFile_Click(object sender, RoutedEventArgs e)
@@ -57,85 +49,205 @@ namespace ShadowStrike.UI.Views
 
         private async void TestSqlInjection_Click(object sender, RoutedEventArgs e)
         {
-            var state = AppState.Load();
-            if (!state.IsScanCompleted)
+            var url = SqliTargetUrlInput.Text;
+            var parameter = SqliParameterInput.Text;
+
+            if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(parameter))
             {
-                CustomMessageBox.Show("Please scan a target in the Dashboard first to identify vulnerabilities and open ports.", "Scan Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomMessageBox.Show("Please enter a Target URL and Parameter for SQL Injection.", "Input Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            StartTest("SQL Injection");
-            Results.Clear();
+            if (!url.StartsWith("http")) url = "https://" + url;
+            SqliTargetUrlInput.Text = url;
 
+            StatusText.Text = "SCANNING SQLi...";
+            StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D29922"));
+            
             try
             {
-                var url = TargetUrlInput.Text;
-                if (!url.StartsWith("http://") && !url.StartsWith("https://"))
-                {
-                    url = "https://" + url;
-                    TargetUrlInput.Text = url;
-                }
-                var parameter = ParameterInput.Text;
-
                 var results = await _tester.TestSqlInjectionAsync(url, parameter);
-
+                
                 foreach (var result in results)
                 {
                     Results.Add(new InjectionResultViewModel
                     {
                         TestName = result.TestName,
                         Type = "SQL Injection",
-                        Status = result.Vulnerable ? "VULNERABLE" : "SECURE",
+                        Status = result.Vulnerable ? "VULNERABLE" : "SAFE",
                         StatusColor = result.Vulnerable ? "#DA3633" : "#238636",
                         Severity = result.Severity,
-                        Details = $"Payload: {result.Payload}\n\nResponse: {result.Response}"
+                        Details = $"Payload: {result.Payload}\nResponse: {result.Response}"
                     });
                 }
-
-                UpdateStats(results.Count, results.Count(r => r.Vulnerable));
-                
-                if (results.Any(r => r.Vulnerable))
-                {
-                    MitigationText.Text = _tester.GetMitigationGuidance("SQLi");
-                }
+                UpdateStats();
             }
             catch (Exception ex)
             {
-                HandleError(ex);
+                CustomMessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            
+            StatusText.Text = "READY";
+            StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3FB950"));
+        }
+
+        private async void SqliDumpData_Click(object sender, RoutedEventArgs e)
+        {
+            var url = SqliTargetUrlInput.Text;
+            var parameter = SqliParameterInput.Text;
+            
+            if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(parameter)) return;
+
+            StatusText.Text = "DUMPING DATA...";
+            StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DA3633"));
+
+            try 
+            {
+                var results = await _tester.ExploitSqlInjectionAsync(url, parameter, "DUMP");
+                
+                foreach (var result in results)
+                {
+                    Results.Add(new InjectionResultViewModel
+                    {
+                        TestName = "Data Dump Attempt",
+                        Type = "SQLi Exploit",
+                        Status = result.Success ? "SUCCESS" : "FAILED",
+                        StatusColor = result.Success ? "#DA3633" : "#8B949E",
+                        Severity = "CRITICAL",
+                        Details = result.Data
+                    });
+                }
+                UpdateStats();
+            }
+            catch (Exception ex)
+            {
+                CustomMessageBox.Show($"Exploit Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            StatusText.Text = "READY";
+        }
+
+        private async void SqliAuthBypass_Click(object sender, RoutedEventArgs e)
+        {
+            var url = SqliTargetUrlInput.Text;
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            StatusText.Text = "BYPASSING AUTH...";
+            var results = await _tester.ExploitSqlInjectionAsync(url, "username", "AUTH_BYPASS");
+             
+             foreach (var result in results)
+            {
+                Results.Add(new InjectionResultViewModel
+                {
+                    TestName = "Auth Bypass Attempt",
+                    Type = "SQLi Exploit",
+                    Status = result.Success ? "SUCCESS" : "FAILED",
+                    StatusColor = result.Success ? "#DA3633" : "#8B949E",
+                    Severity = "CRITICAL",
+                    Details = result.Data
+                });
+            }
+            UpdateStats();
+            StatusText.Text = "READY";
+        }
+
+        private async void TestXss_Click(object sender, RoutedEventArgs e)
+        {
+            var url = XssTargetUrlInput.Text;
+            var parameter = XssParameterInput.Text;
+            var beefHook = BeefHookInput.Text;
+            var attackerServer = AttackerServerInput.Text;
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                 CustomMessageBox.Show("Please enter a Target URL for XSS.", "Input Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                 return;
+            }
+            if (!url.StartsWith("http")) url = "https://" + url;
+
+            StatusText.Text = "SCANNING XSS...";
+            StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#8957E5"));
+
+            try
+            {
+                var exploiter = new XssExploiter();
+                var reconResults = await exploiter.ScanForXssAsync(url, parameter);
+                
+                foreach (var result in reconResults)
+                {
+                    Results.Add(new InjectionResultViewModel
+                    {
+                        TestName = result.TestName,
+                        Type = "XSS Recon",
+                        Status = result.Vulnerable ? "REFLECTED" : "SAFE",
+                        StatusColor = result.Vulnerable ? "#DA3633" : "#238636",
+                        Severity = result.Severity,
+                        Details = result.Details
+                    });
+                }
+
+                if (reconResults.Any(r => r.Vulnerable))
+                {
+                    var payloads = await exploiter.DeployPayloadsAsync(url, parameter, beefHook, attackerServer);
+                    foreach (var payload in payloads)
+                    {
+                         Results.Add(new InjectionResultViewModel
+                        {
+                            TestName = payload.TestName,
+                            Type = "XSS Payload",
+                            Status = "GENERATED",
+                            StatusColor = "#D29922",
+                            Severity = payload.Severity,
+                            Details = $"Payload: {payload.Payload}\n\nDetails: {payload.Details}"
+                        });
+                    }
+                }
+                UpdateStats();
+            }
+            catch (Exception ex)
+            {
+                CustomMessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            StatusText.Text = "READY";
+        }
+
+        private void XssBrowserTest_Click(object sender, RoutedEventArgs e)
+        {
+            var url = XssTargetUrlInput.Text;
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                try 
+                { 
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = url,
+                        UseShellExecute = true
+                    });
+                }
+                catch { }
             }
         }
 
         private async void TestFileUpload_Click(object sender, RoutedEventArgs e)
         {
-            var state = AppState.Load();
-            if (!state.IsScanCompleted)
+            var url = UploadTargetUrlInput.Text;
+            var filePath = FilePathInput.Text;
+
+            if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(filePath))
             {
-                CustomMessageBox.Show("Please scan a target in the Dashboard first to identify vulnerabilities and open ports.", "Scan Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomMessageBox.Show("Please enter a Target URL and select a File.", "Input Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            StartTest("File Upload");
-            Results.Clear();
+            StatusText.Text = "TESTING UPLOAD...";
+            StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#238636"));
 
             try
             {
-                var url = TargetUrlInput.Text;
-                if (!url.StartsWith("http://") && !url.StartsWith("https://"))
-                {
-                    url = "https://" + url;
-                    TargetUrlInput.Text = url;
-                }
-                var filePath = FilePathInput.Text;
-
-                if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
-                {
-                    MessageBox.Show("Please select a valid file.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                _tester.UseBrowserMode = BrowserModeCheckbox.IsChecked == true;
+                _tester.UseBrowserMode = BrowserModeCheckbox.IsChecked ?? false;
+                
                 var results = await _tester.TestFileUploadAsync(url, filePath);
-
+                
                 foreach (var result in results)
                 {
                     Results.Add(new InjectionResultViewModel
@@ -144,152 +256,56 @@ namespace ShadowStrike.UI.Views
                         Type = "File Upload",
                         Status = result.Vulnerable ? "VULNERABLE" : "SECURE",
                         StatusColor = result.Vulnerable ? "#DA3633" : "#238636",
-                        Severity = result.Vulnerable ? "High" : "None",
-                        Details = $"{result.Description}\n\n{result.Details}"
+                        Severity = result.Vulnerable ? "HIGH" : "NONE",
+                        Details = result.Details
                     });
                 }
-
-                UpdateStats(results.Count, results.Count(r => r.Vulnerable));
-
-                if (results.Any(r => r.Vulnerable))
-                {
-                    MitigationText.Text = _tester.GetMitigationGuidance("File Upload");
-                }
+                UpdateStats();
             }
             catch (Exception ex)
             {
-                HandleError(ex);
+                CustomMessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            StatusText.Text = "READY";
         }
 
-        private async void AutoExploit_Click(object sender, RoutedEventArgs e)
+        private async void UploadShell_Click(object sender, RoutedEventArgs e)
         {
-            var state = AppState.Load();
-            if (!state.IsScanCompleted)
-            {
-                CustomMessageBox.Show("Please scan a target in the Dashboard first to identify vulnerabilities and open ports.", "Scan Required", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
+            var url = UploadTargetUrlInput.Text;
+            if (string.IsNullOrWhiteSpace(url)) return;
 
-            StartTest("Auto Exploit");
-            Results.Clear();
+            StatusText.Text = "UPLOADING SHELL...";
+            StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DA3633"));
 
             try
             {
-                var url = TargetUrlInput.Text;
-                if (!url.StartsWith("http://") && !url.StartsWith("https://"))
-                {
-                    url = "https://" + url;
-                    TargetUrlInput.Text = url;
-                }
-                _tester.UseBrowserMode = true;
+                var results = await _tester.UploadWebShellAsync(url);
                 
-                var results = await _tester.AutoDiscoverAndExploitAsync(url);
-
                 foreach (var result in results)
                 {
                     Results.Add(new InjectionResultViewModel
                     {
-                        TestName = result.TestName,
-                        Type = "Auto Exploit",
-                        Status = result.Vulnerable ? "EXPLOITED" : "SECURE",
-                        StatusColor = result.Vulnerable ? "#DA3633" : "#238636",
-                        Severity = result.Vulnerable ? "Critical" : "Info",
-                        Details = $"{result.Description}\n\n{result.Details}"
+                        TestName = "Web Shell Upload",
+                        Type = "Exploit",
+                        Status = result.Success ? "SHELL ACTIVE" : "FAILED",
+                        StatusColor = result.Success ? "#DA3633" : "#8B949E",
+                        Severity = "CRITICAL",
+                        Details = result.Data
                     });
                 }
-
-                UpdateStats(results.Count, results.Count(r => r.Vulnerable));
+                UpdateStats();
             }
             catch (Exception ex)
             {
-                HandleError(ex);
+                CustomMessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            StatusText.Text = "READY";
         }
 
-        private async void AdvancedSQLi_Click(object sender, RoutedEventArgs e)
+        private void UpdateStats()
         {
-            var state = AppState.Load();
-            if (!state.IsScanCompleted)
-            {
-                CustomMessageBox.Show("Please scan a target in the Dashboard first to identify vulnerabilities and open ports.", "Scan Required", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            StartTest("Defacement");
-            Results.Clear();
-
-            try
-            {
-                var url = TargetUrlInput.Text;
-                if (!url.StartsWith("http://") && !url.StartsWith("https://"))
-                {
-                    url = "https://" + url;
-                    TargetUrlInput.Text = url;
-                }
-                var browserTester = new ShadowStrike.Core.BrowserInjectionTester();
-                await browserTester.InitializeBrowserAsync();
-
-                var exploiter = new ShadowStrike.Core.AdvancedSQLiExploiter(browserTester.GetDriver());
-                var result = await exploiter.ExecuteDefacementAttack(url);
-
-                Results.Add(new InjectionResultViewModel
-                {
-                    TestName = "Defacement Attack",
-                    Type = "Advanced SQLi",
-                    Status = result.Success ? "SUCCESS" : "FAILED",
-                    StatusColor = result.Success ? "#DA3633" : "#238636",
-                    Severity = result.Success ? "Critical" : "None",
-                    Details = result.Details
-                });
-
-                UpdateStats(1, result.Success ? 1 : 0);
-            }
-            catch (Exception ex)
-            {
-                HandleError(ex);
-            }
-        }
-
-        private void StartTest(string testName)
-        {
-            StatusText.Text = "TESTING...";
-            StatusText.Foreground = Brushes.Orange;
-            TestsRunText.Text = "-";
-            VulnerabilitiesText.Text = "-";
-        }
-
-        private void UpdateStats(int tests, int vulns)
-        {
-            TestsRunText.Text = tests.ToString();
-            VulnerabilitiesText.Text = vulns.ToString();
-
-            if (vulns > 0)
-            {
-                StatusText.Text = "VULNERABLE";
-                StatusText.Foreground = Brushes.Red;
-            }
-            else
-            {
-                StatusText.Text = "SECURE";
-                StatusText.Foreground = Brushes.Green;
-            }
-        }
-
-        private void HandleError(Exception ex)
-        {
-            StatusText.Text = "ERROR";
-            StatusText.Foreground = Brushes.Red;
-            Results.Add(new InjectionResultViewModel
-            {
-                TestName = "Error",
-                Type = "Error",
-                Status = "ERROR",
-                StatusColor = "#DA3633",
-                Severity = "Error",
-                Details = ex.Message
-            });
-            Logger.Log($"Injection Error: {ex.Message}");
+            TestsRunText.Text = Results.Count.ToString();
+            VulnerabilitiesText.Text = Results.Count(r => r.Status == "VULNERABLE" || r.Status == "SUCCESS" || r.Status == "SHELL ACTIVE").ToString();
         }
     }
 

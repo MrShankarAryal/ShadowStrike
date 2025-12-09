@@ -1,19 +1,17 @@
 ﻿<Window x:Class="ShadowStrike.UI.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="ShadowStrike"
-        Height="800"
-        Width="1400"
-
-
-        Background="{DynamicResource MaterialDesignPaper}"
-        Icon="pack://application:,,,/ShadowStrike.UI;component/img/eagle.ico"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        FontFamily="{DynamicResource MaterialDesignFont}"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        ResizeMode="CanResizeWithGrip">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    Title="ShadowStrike"
+    Height="800"
+    Width="1400"
+    Background="{DynamicResource MaterialDesignPaper}"
+    Icon="pack://application:,,,/ShadowStrike.UI;component/img/eagle.ico"
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    FontFamily="{DynamicResource MaterialDesignFont}"
+    WindowStyle="None"
+    AllowsTransparency="True"
+    ResizeMode="CanResizeWithGrip">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" />
     </WindowChrome.WindowChrome>
@@ -25,20 +23,25 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            
+
             <!-- Drag Handler Background -->
-            <Rectangle Grid.ColumnSpan="3" Fill="Transparent" MouseLeftButtonDown="TitleBar_MouseDown"/>
+            <Rectangle Grid.ColumnSpan="3" Fill="Transparent"
+                MouseLeftButtonDown="TitleBar_MouseDown" />
 
             <!-- App Icon and Name -->
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False">
-                <Image Source="pack://application:,,,/ShadowStrike.UI;component/img/eagle.ico" Width="24" Height="24" />
-                <TextBlock Text="ShadowStrike" Foreground="White" FontSize="14" FontWeight="Bold" Margin="5,0,0,0" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0"
+                IsHitTestVisible="False">
+                <Image Source="pack://application:,,,/ShadowStrike.UI;component/img/eagle.ico"
+                    Width="24" Height="24" />
+                <TextBlock Text="ShadowStrike" Foreground="White" FontSize="14" FontWeight="Bold"
+                    Margin="5,0,0,0" />
             </StackPanel>
             <!-- Menu Bar -->
-            <Menu Grid.Column="1" Background="Transparent" Foreground="White" VerticalAlignment="Center" Margin="10,0">
+            <Menu Grid.Column="1" Background="Transparent" Foreground="White"
+                VerticalAlignment="Center" Margin="10,0">
                 <Menu.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" />
                     </ItemsPanelTemplate>
                 </Menu.ItemsPanel>
                 <!-- File Menu -->
@@ -65,22 +68,50 @@
                 <MenuItem Header="_About" Click="About_Click" />
             </Menu>
             <!-- Window Control Buttons -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
-                <Button Click="Minimize_Click" Style="{StaticResource MaterialDesignFlatButton}" Width="30" Height="30" Padding="0" ToolTip="Minimize">
-                    <materialDesign:PackIcon Kind="WindowMinimize" Width="16" Height="16" Foreground="White" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right"
+                VerticalAlignment="Center" Margin="0,0,10,0">
+                <Button Click="Minimize_Click" Style="{StaticResource MaterialDesignFlatButton}"
+                    Width="30" Height="30" Padding="0" ToolTip="Minimize">
+                    <materialDesign:PackIcon Kind="WindowMinimize" Width="16" Height="16"
+                        Foreground="White" />
                 </Button>
-                <Button Click="MaximizeRestore_Click" Style="{StaticResource MaterialDesignFlatButton}" Width="30" Height="30" Padding="0" ToolTip="Maximize/Restore">
-                    <materialDesign:PackIcon x:Name="MaxRestoreIcon" Kind="WindowMaximize" Width="16" Height="16" Foreground="White" />
+                <Button Click="MaximizeRestore_Click"
+                    Style="{StaticResource MaterialDesignFlatButton}" Width="30" Height="30"
+                    Padding="0" ToolTip="Maximize/Restore">
+                    <materialDesign:PackIcon x:Name="MaxRestoreIcon" Kind="WindowMaximize"
+                        Width="16" Height="16" Foreground="White" />
                 </Button>
-                <Button Click="Close_Click" Style="{StaticResource MaterialDesignFlatButton}" Width="30" Height="30" Padding="0" ToolTip="Close">
+                <Button Click="Close_Click" Style="{StaticResource MaterialDesignFlatButton}"
+                    Width="30" Height="30" Padding="0" ToolTip="Close">
                     <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="White" />
                 </Button>
             </StackPanel>
         </Grid>
         <!-- Status Bar -->
-        <StatusBar DockPanel.Dock="Bottom" Background="#0D1117" Height="24">
+        <StatusBar DockPanel.Dock="Bottom" Background="#0D1117" Height="30" Foreground="#8899A6">
             <StatusBarItem>
-                <TextBlock Text="Dev.Shankar" Foreground="#8899A6" FontSize="10" Margin="5,0,0,0" />
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ShieldCheck" Width="14" Height="14"
+                        VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#00FF88" />
+                    <TextBlock x:Name="GlobalTorStatus" Text="Tor: Initializing..." FontSize="11"
+                        VerticalAlignment="Center" />
+                </StackPanel>
+            </StatusBarItem>
+            <Separator Style="{StaticResource MaterialDesignDarkSeparator}" Margin="10,0" />
+            <StatusBarItem>
+                <TextBlock x:Name="GlobalTorPort" Text="Port: -" FontSize="11" />
+            </StatusBarItem>
+            <Separator Style="{StaticResource MaterialDesignDarkSeparator}" Margin="10,0" />
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="Refresh" Width="14" Height="14"
+                        VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <TextBlock x:Name="GlobalRotationStatus" Text="IP Rotation: Inactive"
+                        FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="Dev.Shankar" FontSize="10" Opacity="0.5" Margin="0,0,10,0" />
             </StatusBarItem>
         </StatusBar>
         <!-- Console/Log Output (Removed) -->
@@ -91,55 +122,72 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <!-- Sidebar -->
-            <Border Grid.Column="0" Background="#151921" BorderBrush="#1F242F" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Background="#151921" BorderBrush="#1F242F"
+                BorderThickness="0,0,1,0">
                 <StackPanel Margin="10,20">
 
                     <!-- Navigation Buttons -->
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="Dashboard_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="Dashboard_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ViewDashboard" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="ViewDashboard" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="Dashboard" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="HttpFlood_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="HttpFlood_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="LightningBolt" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="LightningBolt" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="HTTP Flood" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="SynFlood_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="SynFlood_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Fire" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="Fire" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="SYN Flood" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="UdpFlood_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="UdpFlood_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Water" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="Water" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="UDP Flood" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="Injection_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="Injection_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ShieldAlert" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="ShieldAlert" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="Injection" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="Ransomware_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="Ransomware_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="LockAlert" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="LockAlert" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="Ransomware" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="Terminal_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="Terminal_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Console" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="Console" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="Terminal" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50" Margin="0,5" Click="Logs_Click" HorizontalContentAlignment="Left">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Height="50"
+                        Margin="0,5" Click="Logs_Click" HorizontalContentAlignment="Left">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="History" Width="24" Height="24" Margin="10,0,15,0" />
+                            <materialDesign:PackIcon Kind="History" Width="24" Height="24"
+                                Margin="10,0,15,0" />
                             <TextBlock Text="Logs &amp; History" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>

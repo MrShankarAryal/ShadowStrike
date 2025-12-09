@@ -45,7 +45,7 @@ namespace ShadowStrike.UI.Views
 
         private void ClearAllBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Are you sure you want to delete all scan history?", "Confirm Clear", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            if (CustomMessageBox.Show("Are you sure you want to delete all scan history?", "Confirm Clear", MessageBoxButton.YesNo, MessageBoxImage.Warning))
             {
                 _historyManager.ClearHistory();
                 LoadLogs();

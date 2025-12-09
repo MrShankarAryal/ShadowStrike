@@ -16,6 +16,38 @@ namespace ShadowStrike.UI
             InitializeComponent();
             MainFrame.Navigate(new DashboardView());
             LogMessage("ShadowStrike initialized successfully");
+            
+            // Global Tor Initialization
+            InitializeGlobalProtection();
+        }
+
+        private async void InitializeGlobalProtection()
+        {
+            LogMessage("Initializing Global Security Shield...");
+            GlobalTorStatus.Text = "Tor: Starting...";
+            
+            bool success = await ShadowStrike.Core.TorManager.StartTorAsync();
+            if (success)
+            {
+                ShadowStrike.Core.TorManager.StartRotationService(7); // 7s Rotation
+                
+                // Update Status Bar
+                GlobalTorStatus.Text = "Tor: Connected (Global)";
+                GlobalTorStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136)); // Green
+                
+                GlobalTorPort.Text = $"Port: {ShadowStrike.Core.TorManager.TorPort}";
+                
+                GlobalRotationStatus.Text = "IP Rotation: Active (7s)";
+                GlobalRotationStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136));
+
+                LogMessage($"Global Protection Active (Tor Port {ShadowStrike.Core.TorManager.TorPort} | Auto-Rotation: 7s)");
+            }
+            else
+            {
+                GlobalTorStatus.Text = "Tor: Failed";
+                GlobalTorStatus.Foreground = Brushes.Red;
+                LogMessage("Warning: Failed to initialize Global Tor. Please ensure Tor is installed or run manually.");
+            }
         }
 
         public void LogMessage(string message)

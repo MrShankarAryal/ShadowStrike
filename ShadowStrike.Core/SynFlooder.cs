@@ -40,6 +40,13 @@ namespace ShadowStrike.Core
                             using (var client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                             {
                                 client.Blocking = false; // Non-blocking
+                                
+                                // FORCE RESET: This is the key fix for "Self-DoS"
+                                // Setting LingerOption(true, 0) causes the socket to send a TCP RST (Reset) 
+                                // instead of a FIN when closed. This immediately frees the port and 
+                                // prevents the OS from holding it in TIME_WAIT state.
+                                client.LingerState = new LingerOption(true, 0);
+
                                 try
                                 {
                                     client.Connect(ip, port);
@@ -49,8 +56,9 @@ namespace ShadowStrike.Core
                                     // Expected as we are non-blocking or if target is down
                                 }
                                 Interlocked.Increment(ref _packetsSent);
-                                // We don't wait for connection, we just fire and forget (mostly)
-                                // Or we immediately close to free resources on our end while target is in SYN_RCVD
+                                
+                                // Immediate close with RST triggers the port release
+                                client.Close();
                             }
                         }
                         catch { }

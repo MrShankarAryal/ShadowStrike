@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Variables (IMPORTANT: Never commit these!)
+.env
+.env.local
+.env.production
+.env.development
+
+# Vercel
+.vercel
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

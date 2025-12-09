@@ -61,7 +61,7 @@
                         </Grid.ColumnDefinitions>
                         <Slider x:Name="DurationSlider" 
                                 Minimum="0" 
-                                Maximum="300" 
+                                Maximum="50000" 
                                 Value="0" 
                                 TickFrequency="10"
                                 IsSnapToTickEnabled="True"

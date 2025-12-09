@@ -5,7 +5,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using ShadowStrike.Core;
-
 using ShadowStrike.UI;
 
 namespace ShadowStrike.UI.Views
@@ -13,9 +12,13 @@ namespace ShadowStrike.UI.Views
     public partial class HttpFloodView : UserControl
     {
         private HttpFlooder _flooder = new HttpFlooder();
+        private BrowserFlooder _browserFlooder = new BrowserFlooder();
         private CancellationTokenSource? _cts;
         private DispatcherTimer _timer;
         private bool _isAttacking = false;
+        // private int _torPort = 9050; // REMOVED - Using Global TorManager
+        private System.Net.CookieContainer _bypassedCookies;
+        private string _bypassedUserAgent;
 
         public HttpFloodView()
         {
@@ -31,8 +34,7 @@ namespace ShadowStrike.UI.Views
                 TargetInput.Text = appState.TargetUrl;
             }
 
-            // Check if scan is required
-            // Check if scan is required
+            // Check Tor connectivity - REMOVED (Handled Globally by MainWindow)
             this.Loaded += (s, e) =>
             {
                 var state = AppState.Load();
@@ -45,9 +47,13 @@ namespace ShadowStrike.UI.Views
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            RequestsText.Text = _flooder.RequestCount.ToString("N0");
-            FailedText.Text = _flooder.FailedCount.ToString("N0");
+            RequestsText.Text = _browserFlooder.RequestCount.ToString("N0");
+            FailedText.Text = "0"; 
         }
+
+        // AttackModeCombo_SelectionChanged Removed
+        
+        // BypassBtn_Click Removed
 
         private async void AttackBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -56,10 +62,11 @@ namespace ShadowStrike.UI.Views
                 // Stop Attack
                 _cts?.Cancel();
                 _flooder.Stop();
+                _browserFlooder.Stop();
                 _timer.Stop();
                 
                 AttackBtn.Content = "LAUNCH ATTACK";
-                AttackBtn.Background = Brushes.Purple;
+                AttackBtn.Background = (Brush)FindResource("PrimaryHueMidBrush"); // Restore original color
                 StatusText.Text = "STOPPED";
                 StatusText.Foreground = Brushes.Orange;
                 _isAttacking = false;
@@ -88,8 +95,15 @@ namespace ShadowStrike.UI.Views
                 }
 
                 int threads = (int)ThreadSlider.Value;
+                int duration = (int)DurationSlider.Value;
                 
                 _cts = new CancellationTokenSource();
+                
+                if (duration > 0)
+                {
+                    _cts.CancelAfter(TimeSpan.FromSeconds(duration));
+                }
+
                 _timer.Start();
                 
                 AttackBtn.Content = "STOP ATTACK";
@@ -98,9 +112,14 @@ namespace ShadowStrike.UI.Views
                 StatusText.Foreground = Brushes.Red;
                 _isAttacking = true;
 
+
                 try
                 {
-                    await _flooder.StartAttackAsync(target, threads, _cts.Token);
+                    // ALWAYS use Browser Flood (Bypass Mode)
+                    // ALWAYS use Integrated Tor (User Request)
+                    bool useExternalTor = false; 
+                    
+                    await _browserFlooder.StartAttackAsync(target, threads, _cts.Token, useExternalTor);
                 }
                 catch (Exception ex)
                 {

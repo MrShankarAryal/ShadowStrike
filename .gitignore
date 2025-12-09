@@ -48,7 +48,7 @@ build_errors.txt
 
 # Application logs
 Logs/
-*.json
+
 
 # Temporary files
 *.tmp
@@ -83,3 +83,6 @@ publish/
 PUSH_TO_GITHUB.md
 PUSH_v2.1.0_GUIDE.md
 my_build_output.txt
+build_log.txt
+build_output.md
+

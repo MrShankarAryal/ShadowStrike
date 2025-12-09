@@ -1,6 +1,6 @@
 # Contributing to ShadowStrike
 
-First off, thank you for considering contributing to ShadowStrike! It's people like you that make ShadowStrike such a great tool.
+First off, thank to me for creating this tool and last but not least for considering contributing to ShadowStrike! It's people like you that make ShadowStrike such a great tool.
 
 ## Table of Contents
 
