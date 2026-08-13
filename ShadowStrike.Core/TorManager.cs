@@ -93,6 +93,28 @@ namespace ShadowStrike.Core
                 discoveredPath = @"C:\Program Files\Tor\tor.exe";
             }
 
+            // f. {InstallDir}\Tor\tor.exe  — bundled with installer (Option A)
+            if (discoveredPath == null)
+            {
+                var bundledPath = Path.Combine(AppContext.BaseDirectory, "Tor", "tor.exe");
+                if (File.Exists(bundledPath))
+                {
+                    discoveredPath = bundledPath;
+                }
+            }
+
+            // g. {LocalAppData}\ShadowStrike\Tor\tor.exe — auto-downloaded fallback
+            if (discoveredPath == null)
+            {
+                var downloadedPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "ShadowStrike", "Tor", "tor.exe");
+                if (File.Exists(downloadedPath))
+                {
+                    discoveredPath = downloadedPath;
+                }
+            }
+
             // Fallback to the original hardcoded path if none found
             if (discoveredPath == null)
             {
@@ -106,6 +128,8 @@ namespace ShadowStrike.Core
 
             try
             {
+                RotationCount = 0;
+                _rotationCount = 0;
                 _torProcess = new Process();
                 _torProcess.StartInfo.FileName = discoveredPath;
                 // Enable ControlPort dynamically
@@ -132,6 +156,12 @@ namespace ShadowStrike.Core
             return false;
         }
 
+        // ── IP Rotation ──────────────────────────────────────────────────────────
+
+        /// <summary>Number of successful Tor circuit rotations since last start.</summary>
+        public static int RotationCount { get; private set; } = 0;
+        private static int _rotationCount = 0;
+
         public static async Task RotateIdentityAsync()
         {
             try
@@ -150,7 +180,12 @@ namespace ShadowStrike.Core
                 {
                     // Send NEWNYM signal
                     await writer.WriteLineAsync("SIGNAL NEWNYM");
-                    await reader.ReadLineAsync(); // Read response
+                    var newnymResponse = await reader.ReadLineAsync();
+                    if (newnymResponse != null && newnymResponse.StartsWith("250"))
+                    {
+                        // Increment rotation counter only on confirmed success
+                        RotationCount = Interlocked.Increment(ref _rotationCount);
+                    }
                 }
             }
             catch 
@@ -202,6 +237,67 @@ namespace ShadowStrike.Core
         {
             _rotationCts?.Cancel();
             _rotationCts = null;
+        }
+
+        // ── Auto-Download (Option A fallback for portable / no-installer use) ────
+
+        /// <summary>
+        /// Downloads the official Tor Expert Bundle for Windows (x86_64) and extracts
+        /// tor.exe + required DLLs to %LocalAppData%\ShadowStrike\Tor\.
+        /// Called when no Tor installation is found anywhere on the system.
+        /// </summary>
+        public static async Task<bool> DownloadTorAsync(IProgress<string>? progress = null)
+        {
+            const string TorBundleUrl =
+                "https://archive.torproject.org/tor-package-archive/torbrowser/14.5.3/tor-expert-bundle-windows-x86_64-14.5.3.tar.gz";
+
+            var destDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ShadowStrike", "Tor");
+
+            try
+            {
+                Directory.CreateDirectory(destDir);
+
+                var tmpTar = Path.Combine(Path.GetTempPath(), "shadowstrike-tor-bundle.tar.gz");
+
+                // Download
+                progress?.Report("Downloading Tor Expert Bundle (~7 MB)…");
+                using (var http = new System.Net.Http.HttpClient())
+                {
+                    http.Timeout = TimeSpan.FromMinutes(3);
+                    var data = await http.GetByteArrayAsync(TorBundleUrl);
+                    await File.WriteAllBytesAsync(tmpTar, data);
+                }
+
+                // Extract with system tar (built into Windows 10+ / Server 2019+)
+                progress?.Report("Extracting Tor binaries…");
+                var tarArgs = $"-xzf \"{tmpTar}\" -C \"{destDir}\" --strip-components=1 tor/tor.exe tor/libssl-3.dll tor/libcrypto-3.dll tor/zlib1.dll";
+                var psi = new ProcessStartInfo("tar", tarArgs)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                };
+                var proc = Process.Start(psi)!;
+                await proc.WaitForExitAsync();
+
+                try { File.Delete(tmpTar); } catch { }
+
+                if (File.Exists(Path.Combine(destDir, "tor.exe")))
+                {
+                    progress?.Report("Tor downloaded successfully ✓");
+                    return true;
+                }
+
+                progress?.Report("Download completed but tor.exe not found in archive.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                progress?.Report($"Tor download failed: {ex.Message}");
+                return false;
+            }
         }
 
         private static async Task<bool> CheckTorConnectionAsync(int port)

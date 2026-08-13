@@ -24,6 +24,10 @@ namespace ShadowStrike.Core
                 return sum;
             }
         }
+
+        private long _failedBrowserCount;
+        /// <summary>Number of browser instances that failed to launch or crashed.</summary>
+        public long FailedCount => Interlocked.Read(ref _failedBrowserCount);
         
         private List<IWebDriver> _drivers = new List<IWebDriver>();
 
@@ -40,9 +44,7 @@ namespace ShadowStrike.Core
         public async Task StartAttackAsync(string url, int totalThreads, CancellationToken token, bool useExternalTor = false)
         {
             _isRunning = true;
-            _drivers.Clear();
-
-            _isRunning = true;
+            _failedBrowserCount = 0;
             _drivers.Clear();
 
             // Use Global Tor Port
@@ -162,7 +164,8 @@ namespace ShadowStrike.Core
                     }
                     catch (Exception)
                     {
-                        // Ignore
+                        // Count every browser that fails to launch / crashes
+                        Interlocked.Increment(ref _failedBrowserCount);
                     }
                     finally
                     {

@@ -36,6 +36,33 @@ jobs:
           -p:PublishReadyToRun=true `
           -p:IncludeNativeLibrariesForSelfExtract=true `
           -o publish
+
+    - name: Bundle Tor Expert Bundle
+      shell: powershell
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        $TorVersion = "14.5.3"
+        $TorUrl = "https://archive.torproject.org/tor-package-archive/torbrowser/$TorVersion/tor-expert-bundle-windows-x86_64-$TorVersion.tar.gz"
+        $TorTar  = "tor-expert-bundle.tar.gz"
+
+        Write-Host "Downloading Tor Expert Bundle $TorVersion..."
+        Invoke-WebRequest -Uri $TorUrl -OutFile $TorTar -UseBasicParsing
+
+        # Create output directory inside publish so the installer picks it up
+        New-Item -ItemType Directory -Force -Path "publish\Tor" | Out-Null
+
+        # Extract only the tor/ subdirectory (tar strips leading component)
+        # Windows 10+ / Server 2019+ ship with BSD tar
+        tar -xzf $TorTar --strip-components=1 -C publish\Tor tor/
+
+        Write-Host "Tor bundle contents:"
+        Get-ChildItem publish\Tor
+
+        if (-not (Test-Path "publish\Tor\tor.exe")) {
+          Write-Error "tor.exe not found after extraction!"
+          exit 1
+        }
+        Write-Host "Tor bundle ready."
           
     - name: Install Inno Setup
       shell: powershell
@@ -74,34 +101,43 @@ jobs:
           installer/ShadowStrike-v${{ github.ref_name }}-Portable.zip
         body: |
           ## ShadowStrike ${{ github.ref_name }}
-          
+
           ### 🚀 Installation Options
-          
+
           **Option 1: Installer (Recommended)**
-          - Download `ShadowStrike-Setup-v2.0.exe`
-          - Run the installer
+          - Download `ShadowStrike-Setup-${{ github.ref_name }}.exe`
+          - Run as Administrator
+          - Tor is bundled — no separate installation needed
           - Creates Start Menu and Desktop shortcuts
-          
+
           **Option 2: Portable**
-          - Download `ShadowStrike-v${{ github.ref_name }}-Portable.zip`
-          - Extract and run `ShadowStrike.UI.exe`
-          - No installation required
-          
-          ### ✨ Features
-          - OSINT Engine - Comprehensive target analysis
-          - DDoS Modules - HTTP/SYN/UDP Flood attacks
-          - Injection Testing - SQL injection and file upload testing
-          - Ransomware Analysis - Security testing capabilities
-          - Terminal Interface - Integrated command-line
-          - Logs & History - Automatic JSON logging
-          
+          - Download `ShadowStrike-${{ github.ref_name }}-Portable.zip`
+          - Extract and run `ShadowStrike.UI.exe` as Administrator
+          - On first launch, the app will offer to download Tor automatically if not found
+
+          ### ✨ What's New in ${{ github.ref_name }}
+          - **Tor bundled in installer** — works on machines with no prior Tor installation
+          - **Real-time attack counters** — Requests Sent, Failed, and IP Rotations now update live
+          - **IP Rotation counter** — shows successful Tor circuit rotations per session
+          - **Professional IP rotation** — SIGNAL NEWNYM every 7s with confirmed success tracking
+          - **Tor status per-view** — HTTP Flood view shows live Tor connection status
+
+          ### 🔧 Features
+          - OSINT Engine — Comprehensive target analysis
+          - DDoS Modules — HTTP/SYN/UDP Flood attacks
+          - Injection Testing — SQL injection and file upload testing
+          - Ransomware Analysis — Security testing capabilities
+          - Terminal Interface — Integrated command-line
+          - Logs & History — Automatic JSON logging
+
           ### ⚠️ Legal Notice
           This tool is for **authorized security testing only**. Unauthorized use is illegal.
-          
+
           ### 📋 Requirements
           - Windows 10/11 (64-bit)
           - Administrator privileges (for raw socket operations)
-          
+          - Tor is **bundled** in the installer; portable builds auto-download on first run
+
           See [CHANGELOG.md](https://github.com/MrShankarAryal/ShadowStrike/blob/main/CHANGELOG.md) for detailed changes.
         draft: false
         prerelease: false

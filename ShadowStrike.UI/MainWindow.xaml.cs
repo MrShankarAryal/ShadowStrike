@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using MaterialDesignThemes.Wpf;
 using System.Windows;
@@ -33,20 +33,71 @@ namespace ShadowStrike.UI
                 
                 // Update Status Bar
                 GlobalTorStatus.Text = "Tor: Connected (Global)";
-                GlobalTorStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136)); // Green
-                
+                GlobalTorStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136));
                 GlobalTorPort.Text = $"Port: {ShadowStrike.Core.TorManager.TorPort}";
-                
                 GlobalRotationStatus.Text = "IP Rotation: Active (7s)";
                 GlobalRotationStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136));
-
                 LogMessage($"Global Protection Active (Tor Port {ShadowStrike.Core.TorManager.TorPort} | Auto-Rotation: 7s)");
             }
             else
             {
-                GlobalTorStatus.Text = "Tor: Failed";
-                GlobalTorStatus.Foreground = Brushes.Red;
-                LogMessage("Warning: Failed to initialize Global Tor. Please ensure Tor is installed or run manually.");
+                GlobalTorStatus.Text = "Tor: Not Found";
+                GlobalTorStatus.Foreground = Brushes.OrangeRed;
+                LogMessage("Tor not found. Prompting user for download...");
+
+                // Offer to download Tor automatically (CustomMessageBox.Show returns bool: true = Yes/OK)
+                bool userWantsDownload = Views.CustomMessageBox.Show(
+                    "Tor is not installed on this machine.\n\n" +
+                    "ShadowStrike uses Tor for anonymous IP routing.\n" +
+                    "Would you like to download the Tor Expert Bundle now? (~7 MB)",
+                    "Tor Not Found",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Question);
+
+                if (userWantsDownload)
+                {
+                    GlobalTorStatus.Text = "Tor: Downloading...";
+                    GlobalTorStatus.Foreground = new SolidColorBrush(Color.FromRgb(255, 200, 0));
+
+                    var progress = new Progress<string>(msg =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            GlobalTorStatus.Text = $"Tor: {msg}";
+                            LogMessage(msg);
+                        });
+                    });
+
+                    bool downloaded = await ShadowStrike.Core.TorManager.DownloadTorAsync(progress);
+
+                    if (downloaded)
+                    {
+                        // Retry connecting now that files exist
+                        bool retrySuccess = await ShadowStrike.Core.TorManager.StartTorAsync();
+                        if (retrySuccess)
+                        {
+                            ShadowStrike.Core.TorManager.StartRotationService(7);
+                            GlobalTorStatus.Text = "Tor: Connected (Global)";
+                            GlobalTorStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136));
+                            GlobalTorPort.Text = $"Port: {ShadowStrike.Core.TorManager.TorPort}";
+                            GlobalRotationStatus.Text = "IP Rotation: Active (7s)";
+                            GlobalRotationStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 136));
+                            LogMessage($"Global Protection Active after download (Port {ShadowStrike.Core.TorManager.TorPort})");
+                            return;
+                        }
+                    }
+
+                    // Download or startup failed
+                    GlobalTorStatus.Text = "Tor: Setup Failed";
+                    GlobalTorStatus.Foreground = Brushes.Red;
+                    LogMessage("Warning: Tor setup failed. Requests will use direct IP.");
+                }
+                else
+                {
+                    GlobalTorStatus.Text = "Tor: Skipped (No Anonymity)";
+                    GlobalTorStatus.Foreground = Brushes.Gray;
+                    LogMessage("Warning: Tor download declined. Requests will use direct IP.");
+                }
             }
         }
 
@@ -148,7 +199,7 @@ namespace ShadowStrike.UI
             };
             var versionText = new TextBlock
             {
-                Text = "Version 2.0",
+                Text = "Version 2.2.1",
                 FontSize = 16,
                 Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#58A6FF")),
                 HorizontalAlignment = HorizontalAlignment.Center,

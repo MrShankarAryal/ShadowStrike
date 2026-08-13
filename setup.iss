@@ -31,7 +31,8 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 [Files]
 Source: "publish\ShadowStrike.UI.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs excludesubdirs
+Source: "publish\Tor\*"; DestDir: "{app}\Tor"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "ShadowStrike.UI\img\eagle.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
@@ -53,7 +54,7 @@ FinishedLabel=Setup has finished installing [name] on your computer.%n%nYou can 
 function InitializeSetup(): Boolean;
 begin
   Result := True;
-  if MsgBox('ShadowStrike v2.0 - Security Testing Platform' + #13#10 + #13#10 + 
+  if MsgBox('ShadowStrike v2.2.1 - Security Testing Platform' + #13#10 + #13#10 + 
             '** LEGAL DISCLAIMER **' + #13#10 + #13#10 + 
             'This software includes powerful security testing modules:' + #13#10 +
             '  * OSINT Engine (reconnaissance and intelligence gathering)' + #13#10 +
