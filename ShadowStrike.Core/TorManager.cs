@@ -11,27 +11,95 @@ namespace ShadowStrike.Core
     {
         private static Process? _torProcess;
         private static string _torPath = @"C:\Users\Shankar Aryal\OneDrive\Desktop\Tor Browser\Browser\TorBrowser\Tor\tor.exe";
+        private static int _controlPort = 9051;
         public static int TorPort { get; private set; } = 9050;
         public static bool IsRunning { get; private set; } = false;
 
-        public static async Task<bool> StartTorAsync()
+        public static async Task<bool> StartTorAsync(ShadowStrike.Core.Anonymity.AnonymitySettings? settings = null)
         {
+            settings ??= ShadowStrike.Core.Anonymity.AnonymitySettings.Load();
+            int targetPort = settings?.TorSocksPort ?? 9050;
+            int controlPort = settings?.TorControlPort ?? 9051;
+            _controlPort = controlPort;
+
             // 1. Check if already running
-            if (await CheckTorConnectionAsync(9150))
+            if (await CheckTorConnectionAsync(targetPort))
+            {
+                TorPort = targetPort;
+                IsRunning = true;
+                return true;
+            }
+            if (targetPort != 9150 && await CheckTorConnectionAsync(9150))
             {
                 TorPort = 9150;
                 IsRunning = true;
                 return true;
             }
-            if (await CheckTorConnectionAsync(9050))
+            if (targetPort != 9050 && await CheckTorConnectionAsync(9050))
             {
                 TorPort = 9050;
                 IsRunning = true;
                 return true;
             }
 
-            // 2. Start Tor Process
-            if (!File.Exists(_torPath))
+            // 2. Path Discovery
+            string? discoveredPath = null;
+
+            // a. Settings path
+            if (settings != null && !string.IsNullOrWhiteSpace(settings.TorExecutablePath) && File.Exists(settings.TorExecutablePath))
+            {
+                discoveredPath = settings.TorExecutablePath;
+            }
+
+            // b. PATH environment variable
+            if (discoveredPath == null)
+            {
+                var pathEnv = Environment.GetEnvironmentVariable("PATH");
+                if (!string.IsNullOrEmpty(pathEnv))
+                {
+                    var paths = pathEnv.Split(Path.PathSeparator);
+                    foreach (var path in paths)
+                    {
+                        var fullPath = Path.Combine(path, "tor.exe");
+                        if (File.Exists(fullPath))
+                        {
+                            discoveredPath = fullPath;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // c. %LOCALAPPDATA%\Tor Browser\Browser\TorBrowser\Tor\tor.exe
+            if (discoveredPath == null)
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var torBrowserPath = Path.Combine(localAppData, @"Tor Browser\Browser\TorBrowser\Tor\tor.exe");
+                if (File.Exists(torBrowserPath))
+                {
+                    discoveredPath = torBrowserPath;
+                }
+            }
+
+            // d. C:\Tor\tor.exe
+            if (discoveredPath == null && File.Exists(@"C:\Tor\tor.exe"))
+            {
+                discoveredPath = @"C:\Tor\tor.exe";
+            }
+
+            // e. C:\Program Files\Tor\tor.exe
+            if (discoveredPath == null && File.Exists(@"C:\Program Files\Tor\tor.exe"))
+            {
+                discoveredPath = @"C:\Program Files\Tor\tor.exe";
+            }
+
+            // Fallback to the original hardcoded path if none found
+            if (discoveredPath == null)
+            {
+                discoveredPath = _torPath;
+            }
+
+            if (!File.Exists(discoveredPath))
             {
                 return false;
             }
@@ -39,9 +107,9 @@ namespace ShadowStrike.Core
             try
             {
                 _torProcess = new Process();
-                _torProcess.StartInfo.FileName = _torPath;
-                // Enable ControlPort 9051 for IP Rotation
-                _torProcess.StartInfo.Arguments = "--SocksPort 9050 --ControlPort 9051"; 
+                _torProcess.StartInfo.FileName = discoveredPath;
+                // Enable ControlPort dynamically
+                _torProcess.StartInfo.Arguments = $"--SocksPort {targetPort} --ControlPort {controlPort}"; 
                 _torProcess.StartInfo.UseShellExecute = false;
                 _torProcess.StartInfo.CreateNoWindow = true;
                 _torProcess.StartInfo.RedirectStandardOutput = true;
@@ -49,9 +117,9 @@ namespace ShadowStrike.Core
 
                 await Task.Delay(5000); 
 
-                if (await CheckTorConnectionAsync(9050))
+                if (await CheckTorConnectionAsync(targetPort))
                 {
-                    TorPort = 9050;
+                    TorPort = targetPort;
                     IsRunning = true;
                     return true;
                 }
@@ -69,7 +137,7 @@ namespace ShadowStrike.Core
             try
             {
                 using var client = new TcpClient();
-                await client.ConnectAsync("127.0.0.1", 9051);
+                await client.ConnectAsync("127.0.0.1", _controlPort);
                 using var stream = client.GetStream();
                 using var writer = new StreamWriter(stream) { AutoFlush = true };
                 using var reader = new StreamReader(stream);
