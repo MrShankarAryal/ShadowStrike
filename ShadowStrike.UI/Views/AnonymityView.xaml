@@ -1,0 +1,104 @@
+<UserControl x:Class="ShadowStrike.UI.Views.AnonymityView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             Background="#151921">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Anonymity Engine Integration" Foreground="White" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Network-layer Tor protection &amp; Whonix-Gateway virtual sandbox orchestration" Foreground="#8899A6" FontSize="13" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="#1E1E2E" CornerRadius="8" Padding="25" BorderBrush="#30363D" BorderThickness="1">
+            <Grid x:Name="WizardGrid">
+
+                <!-- SCREEN 1: MODE SELECTION & REQUIREMENTS CHECK -->
+                <Grid x:Name="Screen1_Requirements" Visibility="Visible">
+                    <StackPanel>
+                        <TextBlock Text="Screen 1: Select Anonymity Operating Mode" Foreground="#58A6FF" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                        
+                        <RadioButton x:Name="RadioLightweight" Content="Lightweight Tor Mode (Host process tor.exe on port 9050 — DEFAULT)" Foreground="White" FontSize="14" IsChecked="True" Margin="0,5,0,10"/>
+                        <TextBlock Text="    • Fast startup (5 seconds)\n    • Routes HTTP/HTTPS traffic through SOCKS5 (ConnectCallback socks5h semantics)\n    • Recommended for quick vulnerability scans" Foreground="#8899A6" FontSize="12" Margin="0,0,0,15"/>
+
+                        <RadioButton x:Name="RadioHardened" Content="Hardened Whonix Mode (Whonix-Gateway + Workstation VMs)" Foreground="White" FontSize="14" Margin="0,5,0,10"/>
+                        <TextBlock Text="    • Full isolation inside VirtualBox internal network 'Whonix'\n    • Zero host network packet leaks\n    • Host MAC spoofing, hostname randomization, DNS flush &amp; telemetry kill" Foreground="#8899A6" FontSize="12" Margin="0,0,0,20"/>
+
+                        <Border Background="#161B22" Padding="15" CornerRadius="6" BorderBrush="#30363D" BorderThickness="1" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="System Pre-Flight Requirements Check:" Foreground="White" FontWeight="Bold" Margin="0,0,0,10"/>
+                                <TextBlock x:Name="TxtReqVbox" Text="• VirtualBox installed: Checking..." Foreground="#E3B341" FontSize="12" Margin="0,2"/>
+                                <TextBlock x:Name="TxtReqRam" Text="• Free RAM (≥ 8GB): Checking..." Foreground="#E3B341" FontSize="12" Margin="0,2"/>
+                                <TextBlock x:Name="TxtReqDisk" Text="• Free Disk Space (≥ 20GB): Checking..." Foreground="#E3B341" FontSize="12" Margin="0,2"/>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                            <Button Content="Enable Anonymous Mode" Click="BtnStartSetup_Click" Background="#238636" Foreground="White" Padding="20,10" FontWeight="Bold"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <!-- SCREEN 2: SETUP PROGRESS -->
+                <Grid x:Name="Screen2_Progress" Visibility="Collapsed">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Screen 2: Initializing Anonymity Engine..." Foreground="#58A6FF" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                        
+                        <ProgressBar x:Name="ProgressSetup" Height="10" IsIndeterminate="True" Foreground="#00FF88" Background="#161B22" Margin="50,0,50,20"/>
+                        <TextBlock x:Name="TxtSetupStatus" Text="Hardening host network parameters..." Foreground="White" FontSize="14" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="TxtSetupSubtext" Text="Step 1 of 6" Foreground="#8899A6" FontSize="12" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- SCREEN 3: VERIFIED & ACTIVE -->
+                <Grid x:Name="Screen3_Verified" Visibility="Collapsed">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <materialDesign:PackIcon Kind="ShieldCheck" Width="28" Height="28" Foreground="#00FF88" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Screen 3: Anonymous Session Verified ✓" Foreground="#00FF88" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Border Background="#161B22" Padding="20" CornerRadius="6" BorderBrush="#00FF88" BorderThickness="1" Margin="0,0,0,20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tor Exit IP:" Foreground="#8899A6" Margin="0,5"/>
+                                <TextBlock x:Name="TxtExitIp" Grid.Row="0" Grid.Column="1" Text="Verified Tor IP" Foreground="White" FontWeight="Bold" Margin="0,5"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="DNS Leak Status:" Foreground="#8899A6" Margin="0,5"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="NONE (socks5h remote DNS)" Foreground="#00FF88" FontWeight="Bold" Margin="0,5"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="MAC Spoof Status:" Foreground="#8899A6" Margin="0,5"/>
+                                <TextBlock x:Name="TxtMacStatus" Grid.Row="2" Grid.Column="1" Text="Randomized (Locally Administered)" Foreground="#00FF88" FontWeight="Bold" Margin="0,5"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Hostname Randomization:" Foreground="#8899A6" Margin="0,5"/>
+                                <TextBlock x:Name="TxtHostnameStatus" Grid.Row="3" Grid.Column="1" Text="Active" Foreground="#00FF88" FontWeight="Bold" Margin="0,5"/>
+                            </Grid>
+                        </Border>
+
+                        <CheckBox x:Name="ChkAutoStart" Content="Start Anonymous Mode automatically on app launch" Foreground="White" Margin="0,0,0,20" Click="ChkAutoStart_Click"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Disconnect / Stop Anonymous Mode" Click="BtnDisconnect_Click" Background="#DA3633" Foreground="White" Padding="20,10" FontWeight="Bold"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
