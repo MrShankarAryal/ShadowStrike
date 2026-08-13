@@ -607,4 +607,4 @@ ShadowStrike is a powerful tool that demonstrates real-world attack techniques. 
 ---
 
 *Last Updated: December 2025*
-*Version: 2.1.0*
+*Version: 2.2.1*

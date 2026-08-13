@@ -8,7 +8,7 @@ The easiest way to install ShadowStrike is using the automated installer.
 
 1. **Download** the latest installer:
    - Go to [Releases](https://github.com/MrShankarAryal/ShadowStrike/releases)
-   - Download `ShadowStrike-Setup-v2.1.0.exe`
+   - Download `ShadowStrike-Setup-v2.2.1.exe`
 
 2. **Run** the installer:
    - Double-click the downloaded file
@@ -35,7 +35,7 @@ For users who prefer portable applications:
 
 1. **Download** the portable version:
    - Go to [Releases](https://github.com/MrShankarAryal/ShadowStrike/releases)
-   - Download `ShadowStrike-v2.1.0-Portable.zip`
+   - Download `ShadowStrike-v2.2.1-Portable.zip`
 
 2. **Extract** the ZIP file:
    - Right-click → Extract All

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-08-14
+
+### Added
+- **Dependency Resolution**: Integrated `NSec.Cryptography` and `MathNet.Numerics` references to fix Core project build.
+- **Dynamic Anonymity Port & Executable Discovery**: Added optional settings parameters to `StartTorAsync`, resolved settings-based ports, configured executable path auto-discovery (via settings path, PATH env, LocalAppData path, and standard fallback C:\Tor / C:\Program Files paths), and updated dynamic control port rotation in `RotateIdentityAsync`.
+
 ## [2.1.0] - 2025-11-27
 
 ### Added

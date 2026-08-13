@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-blue.svg)](https://www.microsoft.com/windows)
 [![Material Design](https://img.shields.io/badge/UI-Material_Design-E91E63)](https://materialdesigninxaml.net/)
-[![Version](https://img.shields.io/badge/Version-2.1.0-brightgreen.svg)](https://github.com/MrShankarAryal/ShadowStrike/releases)
+[![Version](https://img.shields.io/badge/Version-2.2.1-brightgreen.svg)](https://github.com/MrShankarAryal/ShadowStrike/releases)
 
 *High-performance network security assessment tool built with .NET 8 & WPF*
 
@@ -124,7 +124,7 @@
 
 Download the latest installer from the [Releases](https://github.com/MrShankarAryal/ShadowStrike/releases) page.
 
-1. Download `ShadowStrike-Setup-v2.1.0.exe`
+1. Download `ShadowStrike-Setup-v2.2.1.exe`
 2. Run the installer
 3. Follow the installation wizard
 4. Launch from Start Menu or Desktop shortcut
@@ -139,7 +139,7 @@ Download the latest installer from the [Releases](https://github.com/MrShankarAr
 
 Download the portable version from the [Releases](https://github.com/MrShankarAryal/ShadowStrike/releases) page.
 
-1. Download `ShadowStrike-v2.1.0-Portable.zip`
+1. Download `ShadowStrike-v2.2.1-Portable.zip`
 2. Extract to any folder
 3. Run `ShadowStrike.UI.exe`
 
